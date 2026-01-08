@@ -1,2 +1,4 @@
 [deps]
 Diagonalizations = "9cd687f3-b62d-43f3-8fd3-ffcd9e581047"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"

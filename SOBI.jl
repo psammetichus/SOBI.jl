@@ -14,6 +14,8 @@ additive noise
 module SOBI
 
 using Diagonalizations
+using StatsBase
+using LinearAlgebra
 export sobi
 
 function sobi(X :: Array{Float64,2})
