@@ -35,7 +35,8 @@ function sobi(X :: Array{Float64,2})
   
   #conduct approx joint diagonalization
   @info "Approximate joint diagonalization starting..."
-  U = ajd(X,M...)
+  MVec = [M[:,i*5+1:i*5+5] for i in 0:n-1]
+  U = ajd(MVec).F
 
   #estimate mixing matrix A
   @info "Estimating mixing matrix..."
