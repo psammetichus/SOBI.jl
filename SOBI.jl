@@ -18,7 +18,7 @@ using StatsBase
 using LinearAlgebra
 export sobi
 
-function sobi(X :: Array{Float64,2})
+function sobi(X :: Matrix{Float64})
   m,N = size(X)
   n = m
   defaultLags = 100
@@ -50,11 +50,11 @@ function sobi(X :: Array{Float64,2})
 end #function
 
 "detrends a signal by subtracting the mean"
-function standardize(X :: Array{Float64,2}) :: Array{Float64,2}
+function standardize(X :: Matrix{Float64}) :: Matrix{Float64}
   return X .- mean(X, dims=2)
 end
 
-function whitenTransformation(X :: Array{Float64,2})
+function whitenTransformation(X :: Matrix{Float64})
   #scaled by 1 over the sqrt of the eigenvalues
   m,N = size(X)
   Rxx = X[:,1:N-1]*X[:,2:N]'/(N-1) #estimate covariance matrix with time lag 1
@@ -64,7 +64,7 @@ function whitenTransformation(X :: Array{Float64,2})
   #not correct
 end
 
-function estTimeDelayedCov(X :: Array{Float64,2}, lags=100)
+function estTimeDelayedCov(X :: Matrix{Float64}, lags=100)
   m,N = size(X)
   n = m
   k = 1
