@@ -26,26 +26,25 @@ function sobi(X :: Matrix{Float64})
   @info "Standardizing data matrix..."
   X = standardize(X)
   @info "Whitening transformation calculated..."
-  Q = whitenTransformation(X)
-  X = Q*X
+  W = whitenTransformation(X)
+  X = W*X
   
   #estimate delayed time cov matrices
   @info "Estimating lagged covariance matrices..."
-  M = estTimeDelayedCov(X, 100)
+  M = estTimeDelayedCov(X, defaultLags)
   
   #conduct approx joint diagonalization
   @info "Approximate joint diagonalization starting..."
-  MVec = [M[:,i*5+1:i*5+5] for i in 0:n-1]
+  MVec = [M[:,i*m+1:i*m+m] for i in 0:n-1] #make vector of matrices
   U = ajd(MVec).F
 
   #estimate mixing matrix A
   @info "Estimating mixing matrix..."
-  A = pinv(Q)*U[1:n,1:n]
+  A = pinv(W)*U[1:n,1:n]
   
   #estimate source activities
   @info "Estimating source activities..."
-  W = U[1:n,1:n]'*Q
-  S = W*X
+  S = A*X
   return A,S
 end #function
 
@@ -57,11 +56,15 @@ end
 function whitenTransformation(X :: Matrix{Float64})
   #scaled by 1 over the sqrt of the eigenvalues
   m,N = size(X)
-  Rxx = X[:,1:N-1]*X[:,2:N]'/(N-1) #estimate covariance matrix with time lag 1
-  vals,vecs = eigen(Rxx)
-  vals = 1 ./ real.(sqrt.(vals))
-  return diagm(vals)
-  #not correct
+  R0 = cov(X, dims=2)
+  vals,vecs = eigen(R0)
+  σ2 = mean(vals)
+  W = zeros(m,m)
+  for i in 1:m
+    sc = (vals[i] - σ2)^(-1/2)
+    W[:,i] = sc*vecs[i]
+  end
+  return W'
 end
 
 function estTimeDelayedCov(X :: Matrix{Float64}, lags=100)
