@@ -18,7 +18,7 @@ using StatsBase
 using LinearAlgebra
 export sobi
 
-function sobi(X :: Matrix{Float64})
+function sobi(X :: Matrix{Float64}) :: Tuple{Matrix{Float64}, Matrix{Float64}}
   m,N = size(X)
   n = m
   defaultLags = 100
