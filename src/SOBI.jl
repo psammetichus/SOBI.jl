@@ -26,7 +26,7 @@ function sobi(X :: Matrix{Float64}) :: Tuple{Matrix{Float64}, Matrix{Float64}}
   @info "Standardizing data matrix..."
   X = standardize(X)
   @info "Whitening transformation calculated..."
-  W = whitenTransformation(X)
+  W = pcaWhitenTransformation(X)
   X = W*X
   
   #estimate delayed time cov matrices
@@ -53,18 +53,17 @@ function standardize(X :: Matrix{Float64}) :: Matrix{Float64}
   return X .- mean(X, dims=2)
 end
 
-function whitenTransformation(X :: Matrix{Float64})
-  #scaled by 1 over the sqrt of the eigenvalues
-  m,N = size(X)
+function zcaWhitenTransformation(X :: Matrix{Float64})
+  #Whitening transform W = inverse sqrt of cov matrix
   R0 = cov(X, dims=2)
-  vals,vecs = eigen(R0)
-  σ2 = mean(vals)
-  W = zeros(m,m)
-  for i in 1:m
-    sc = (vals[i] - σ2)^(-1/2)
-    W[:,i] = sc*vecs[i]
-  end
-  return W'
+  return R0^(-1/2)
+end
+
+function pcaWhitenTransformation(X :: Matrix{Float64})
+    #whitening W = Λ^-1/2 U' from eigendecomposition
+    covm = cov(X, dims=2)
+    vals, vecs = eigen(covm)
+    return Diagonal(vals)^(-1/2) * vecs'
 end
 
 function estTimeDelayedCov(X :: Matrix{Float64}, lags=100)
@@ -73,7 +72,7 @@ function estTimeDelayedCov(X :: Matrix{Float64}, lags=100)
   k = 1
   p = Int(min(lags, ceil(N/3)))
   pn = p*n
-  M = zeros(ComplexF64, m,pn)
+  M = zeros(Float64, m,pn)
   for u in 1:m:pn
     k += 1
     Rxp = X[:,k:N]*X[:,1:N-k+1]'/(N-k+1) #m x m matrix
