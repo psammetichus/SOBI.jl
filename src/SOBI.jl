@@ -23,14 +23,14 @@ function sobi(X :: Matrix{Float64}) :: Tuple{Matrix{Float64}, Matrix{Float64}}
   defaultLags = 100
   #standardize and whiten
   @info "Standardizing data matrix..."
-  X = standardize(X)
+  Xs = standardize(X)
   @info "Whitening transformation calculated..."
-  W = pcaWhitenTransformation(X)
-  X = W*X
+  W = pcaWhitenTransformation(Xs)
+  Xw = W*Xs
   
   #estimate delayed time cov matrices
   @info "Estimating lagged covariance matrices..."
-  M = estTimeDelayedCov(X, defaultLags)
+  M = estTimeDelayedCov(Xw, defaultLags)
   
   #conduct approx joint diagonalization
   @info "Approximate joint diagonalization starting..."
@@ -39,7 +39,7 @@ function sobi(X :: Matrix{Float64}) :: Tuple{Matrix{Float64}, Matrix{Float64}}
 
   #estimate mixing matrix A
   @info "Estimating mixing matrix..."
-  A = pinv(W)*U[1:m,1:m]
+  A = pinv(W)*U
   
   #estimate source activities
   @info "Estimating source activities..."
