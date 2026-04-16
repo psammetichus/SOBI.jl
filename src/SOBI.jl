@@ -20,7 +20,6 @@ export sobi
 
 function sobi(X :: Matrix{Float64}) :: Tuple{Matrix{Float64}, Matrix{Float64}}
   m,N = size(X)
-  n = m
   defaultLags = 100
   #standardize and whiten
   @info "Standardizing data matrix..."
@@ -35,12 +34,12 @@ function sobi(X :: Matrix{Float64}) :: Tuple{Matrix{Float64}, Matrix{Float64}}
   
   #conduct approx joint diagonalization
   @info "Approximate joint diagonalization starting..."
-  MVec = [M[:,i*m+1:i*m+m] for i in 0:n-1] #make vector of matrices
+  MVec = [M[:,i*m+1:i*m+m] for i in 0:m-1] #make vector of matrices
   U = ajd(MVec).F
 
   #estimate mixing matrix A
   @info "Estimating mixing matrix..."
-  A = pinv(W)*U[1:n,1:n]
+  A = pinv(W)*U[1:m,1:m]
   
   #estimate source activities
   @info "Estimating source activities..."
@@ -68,12 +67,14 @@ end
 
 function estTimeDelayedCov(X :: Matrix{Float64}, lags=100)
   m,N = size(X)
-  n = m
   k = 1
   p = Int(min(lags, ceil(N/3)))
-  pn = p*n
-  M = zeros(Float64, m,pn)
-  for u in 1:m:pn
+  pm = p*m
+  M = zeros(Matrix{Float64}, m,pm)
+
+  for u in 1:p
+      M[
+  for u in 1:m:pm
     k += 1
     Rxp = X[:,k:N]*X[:,1:N-k+1]'/(N-k+1) #m x m matrix
     M[:,u:u+m-1] = norm(Rxp)*Rxp
